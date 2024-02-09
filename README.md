@@ -1,1 +1,1 @@
-# cloudnative-ai-server
+# cloudNative-ai-server

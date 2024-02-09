@@ -9,13 +9,29 @@ spec:
         user: root ,
         privateKeyPath: "~/.ssh/id_ed25519",
     }
+    - { name: master2,
+        address: 10.10.10.145,
+        user: root ,
+        privateKeyPath: "~/.ssh/id_ed25519",
+    }
+    - { name: master3,
+        address: 10.10.10.146,
+        user: root ,
+        privateKeyPath: "~/.ssh/id_ed25519",
+    }
   roleGroups:
     etcd:
       - master1
+      - master2
+      - master3
     control-plane:
       - master1
+      - master2
+      - master3
     worker:
       - master1
+      - master2
+      - master3
   kubernetes:
     type: kubernetes
     version: v1.29.1
