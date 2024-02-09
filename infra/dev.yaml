@@ -1,0 +1,23 @@
+apiVersion: kubekey.kubesphere.io/v1alpha2
+kind: Cluster
+metadata:
+  name: local
+spec:
+  hosts:
+    - { name: master1,
+        address: 10.10.10.144,
+        user: root ,
+        privateKeyPath: "~/.ssh/id_ed25519",
+    }
+  roleGroups:
+    etcd:
+      - master1
+    control-plane:
+      - master1
+    worker:
+      - master1
+  kubernetes:
+    type: kubernetes
+    version: v1.29.1
+    autoRenewCerts: true
+    containerManager: containerd
