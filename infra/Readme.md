@@ -6,6 +6,7 @@
 2. setup control-plane with complete default config from kubeKey
 3. add 2 more nodes(control-plane,worker,etcd) in yaml
 4. `kk add nodes -f ./ai-server/infra/dev.yaml`
+5. attention: kubeKey forbids etcd nodes to be deleted
 
 ## image registry
 
