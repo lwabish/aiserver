@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sad-talker
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: sad-talker
+          image: ccr.ccs.tencentyun.com/lwabish/sadtalker
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+

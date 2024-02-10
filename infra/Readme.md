@@ -19,3 +19,16 @@
 2. expose 443 ports on each node ready for ingress
 3. access any one of servers via nodePubIP:443
 4. use dns loadbalancer to route traffic to any one of servers
+
+## gpu
+
+nvidia gpu-operator chart
+
+```commandline
+helm install --wait --generate-name \
+     -n nvidia-gpu-operator --create-namespace \
+     nvidia/gpu-operator
+```
+
+## storage
+
