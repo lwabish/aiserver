@@ -5,6 +5,10 @@ metadata:
 spec:
   template:
     spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ai-server
       restartPolicy: Never
       containers:
         - name: sad-talker
@@ -13,4 +17,8 @@ spec:
           resources:
             limits:
               nvidia.com/gpu: "1"
+          volumeMounts:
+            - mountPath: /app/SadTalker/results
+              name: data
+              subPath: sad-talker/result
 
