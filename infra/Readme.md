@@ -37,3 +37,10 @@ helm install --wait --generate-name \
    kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml
    ```
 2. prod: openebs?
+
+## middleware
+
+1. mariadb
+  ```commandline
+  helm upgrade -i -n mariadb --create-namespace mariadb oci://registry-1.docker.io/bitnamicharts/mariadb
+  ```
