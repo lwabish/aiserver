@@ -3,7 +3,7 @@ package sadtalker
 import "github.com/lwabish/cloudnative-ai-server/utils"
 
 const (
-	group = "sad-talker"
+	group = "sadTalker"
 )
 
 func init() {

@@ -22,7 +22,9 @@ type RouteInfo struct {
 }
 
 func RegisterGroupMiddleware(group RouteGroup, middlewares []gin.HandlerFunc) {
+	GroupMiddlewares[group] = middlewares
 }
 
 func RegisterRoutes(group RouteGroup, routes []RouteInfo) {
+	Routes[group] = append(Routes[group], routes...)
 }

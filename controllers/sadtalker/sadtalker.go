@@ -7,10 +7,19 @@ import (
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"net/http"
+	"path/filepath"
+	"strings"
 )
 
 var (
-	stCtl = newSadTalkerController(&cfg{})
+	stCtl                   = newSadTalkerController(&cfg{})
+	allowedUploadExtensions = []string{
+		"png", "jpg", "jpeg", "gif", "mp3", "wav", "m4a", "mp4",
+	}
+)
+
+const (
+	uploadDir = ""
 )
 
 func newSadTalkerController(_ *cfg) *controller {
@@ -28,18 +37,30 @@ type cfg struct {
 
 // UploadFile 上传文件并创建任务
 func (s *controller) UploadFile(c *gin.Context) {
-	// 模拟文件保存逻辑，实际应用中需要保存上传的文件
-	file, _ := c.FormFile("file")
-	if file == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No file part"})
+	photo, pErr := c.FormFile("photo")
+	audio, aErr := c.FormFile("audio")
+	if pErr != nil || aErr != nil || photo.Filename == "" || audio.Filename == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "photo/audio file not found"})
 		return
 	}
-	// 假设文件保存成功，创建任务
-	task := models.Task{
+
+	if !isAllowedExtension(photo.Filename) || !isAllowedExtension(audio.Filename) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file extension not allowed"})
+		return
+	}
+
+	photoPath := filepath.Join(uploadDir, photo.Filename)
+	audioPath := filepath.Join(uploadDir, audio.Filename)
+	if pErr, aErr = c.SaveUploadedFile(photo, photoPath), c.SaveUploadedFile(audio, audioPath); pErr != nil || aErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
+		return
+	}
+	task := &models.Task{
+		Uid:    "",
 		Status: "pending",
 	}
-	//s.Create(&task)
-	c.JSON(http.StatusCreated, gin.H{"task_id": task.ID})
+	s.DB.Create(&task)
+	c.JSON(http.StatusCreated, gin.H{"task_id": task.Uid})
 }
 
 // GetTaskStatus 查询任务状态，适应POST方法
@@ -74,4 +95,13 @@ func DownloadResult(c *gin.Context, db *gorm.DB) {
 	}
 	// 实际应用中应该根据task.Result提供文件下载
 	c.JSON(http.StatusOK, gin.H{"message": "Download API to be implemented"})
+}
+
+func isAllowedExtension(fileName string) bool {
+	for _, extension := range allowedUploadExtensions {
+		if strings.ToLower(filepath.Ext(fileName)) == extension {
+			return true
+		}
+	}
+	return false
 }

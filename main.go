@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/lwabish/cloudnative-ai-server/config"
+	_ "github.com/lwabish/cloudnative-ai-server/controllers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/routes"
 	"github.com/lwabish/cloudnative-ai-server/utils"

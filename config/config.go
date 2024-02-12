@@ -9,6 +9,16 @@ type Config struct {
 	DatabaseURL string `mapstructure:"database_url"`
 	LogLevel    string `mapstructure:"log_level"`
 	ServerPort  string `mapstructure:"server_port"`
+	Auth        struct {
+		TokenExpire      bool
+		TokenValidPeriod int64 `mapstructure:"token_valid_period"`
+		TokenThreshold   int64 `mapstructure:"token_threshold"`
+	}
+	SadTalker struct {
+		PythonPath string
+		UploadDir  string
+		ResultDir  string
+	}
 }
 
 func LoadConfig(path string) (config Config, err error) {

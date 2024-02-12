@@ -9,8 +9,8 @@ import (
 
 func StartWorker(queue *utils.TaskQueue) {
 	for task := range queue.Chan() {
+		queue.TaskOut()
 		processTask(task)
-		queue.TaskDone()
 	}
 }
 

@@ -26,7 +26,7 @@ func (q *TaskQueue) Enqueue(task *models.Task) {
 	q.tasksChan <- task // 将任务发送到通道，以便工作线程处理
 }
 
-func (q *TaskQueue) TaskDone() {
+func (q *TaskQueue) TaskOut() {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 

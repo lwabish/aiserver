@@ -11,9 +11,9 @@ var (
 )
 
 type BaseController struct {
-	db *gorm.DB
-	q  *utils.TaskQueue
-	l  *logrus.Logger
+	DB *gorm.DB
+	Q  *utils.TaskQueue
+	L  *logrus.Logger
 }
 type BaseControllerCfg struct {
 }
