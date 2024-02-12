@@ -1,16 +1,20 @@
 package sadtalker
 
-import "github.com/lwabish/cloudnative-ai-server/utils"
+import (
+	"github.com/lwabish/cloudnative-ai-server/utils"
+	"net/http"
+)
 
 const (
-	group = "sadTalker"
+	group    = "sadTalker"
+	TaskType = group
 )
 
 func init() {
 	utils.RegisterRoutes(group, []utils.RouteInfo{
 		{Path: "upload",
-			Method:     "POST",
+			Method:     http.MethodPost,
 			Middleware: nil,
-			Handler:    stCtl.UploadFile},
+			Handler:    StCtl.UploadFile},
 	})
 }

@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var (
-	stCtl                   = newSadTalkerController(&cfg{})
+	StCtl                   = newSadTalkerController(&cfg{})
 	allowedUploadExtensions = []string{
 		"png", "jpg", "jpeg", "gif", "mp3", "wav", "m4a", "mp4",
 	}
@@ -24,12 +25,15 @@ const (
 
 func newSadTalkerController(_ *cfg) *controller {
 	return &controller{
-		controllers.BaseCtl,
+		BaseController: controllers.BaseCtl,
+		workerParam:    make(map[string]taskParam),
 	}
 }
 
 type controller struct {
 	*controllers.BaseController
+	workerParam map[string]taskParam
+	sync.Mutex
 }
 
 type cfg struct {
@@ -57,9 +61,11 @@ func (s *controller) UploadFile(c *gin.Context) {
 	}
 	task := &models.Task{
 		Uid:    "",
-		Status: "pending",
+		Type:   TaskType,
+		Status: models.TaskStatusPending,
 	}
-	s.DB.Create(&task)
+	s.DB.Create(task)
+	s.Q.Enqueue(task)
 	c.JSON(http.StatusCreated, gin.H{"task_id": task.Uid})
 }
 
