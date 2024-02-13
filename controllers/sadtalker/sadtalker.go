@@ -1,6 +1,7 @@
 package sadtalker
 
 import (
+	"errors"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"sync"
 	"time"
@@ -26,7 +27,6 @@ func newController() *controller {
 	}
 }
 
-// InjectCfg 如果sub controller有配置，通过main包调用注入配置和其他依赖
-func (s *controller) InjectCfg() {
-
+func (s *controller) Setup() {
+	panic(errors.New("not implemented"))
 }
