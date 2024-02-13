@@ -19,11 +19,11 @@ func (s *controller) Process(task *models.Task) {
 		}
 	}()
 	p := s.getParam(task.Uid)
-	s.L.Infof("Processing sad talker task %v+ %v+", task, p)
+	s.L.Infof("Processing sad talker task %+v %+v", task, p)
 
 	//todo
-	time.Sleep(10 * time.Second)
-
+	time.Sleep(10 * time.Minute)
+	s.L.Infof("Processing sad talker task done%v %v", task, p)
 	s.UpdateTaskStatus(task.Uid, models.TaskStatusSuccess)
 }
 

@@ -34,8 +34,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	// 初始化任务队列
-	taskQueue := utils.NewTaskQueue(0)
+	taskQueue := utils.NewTaskQueue()
 
 	controllers.Inject(&controllers.BaseControllerCfg{
 		DB: db,

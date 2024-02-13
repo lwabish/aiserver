@@ -29,8 +29,11 @@ func Inject(cfg *BaseControllerCfg) {
 }
 
 func (b *BaseController) UpdateTaskStatus(uid string, status models.TaskStatus) {
-	r := b.DB.Update(&models.Task{Uid: uid}, "status", status)
-	if r.Error != nil {
+	r := b.DB.
+		Model(&models.Task{}).
+		Where("uid = ?", uid).
+		Update("status", status)
+	if r.Error != nil || r.RowsAffected != 1 {
 		b.L.Warnf("update task status error: %v", r.Error)
 	}
 }

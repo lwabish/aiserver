@@ -5,12 +5,16 @@ import (
 	"github.com/lwabish/cloudnative-ai-server/controllers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
+	"time"
 )
 
 func StartWorker(queue *utils.TaskQueue) {
-	for task := range queue.Chan() {
-		queue.TaskOut()
-		processTask(task)
+	for {
+		time.Sleep(1 * time.Second)
+		if queue.Len() != 0 {
+			t := queue.PopFront()
+			processTask(t)
+		}
 	}
 }
 
