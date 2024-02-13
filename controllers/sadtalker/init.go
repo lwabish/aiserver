@@ -16,5 +16,13 @@ func init() {
 			Method:     http.MethodPost,
 			Middleware: nil,
 			Handler:    StCtl.UploadFile},
+		{Path: "status",
+			Method:     http.MethodPost,
+			Middleware: nil,
+			Handler:    StCtl.GetTaskStatus},
+		{Path: "download",
+			Method:     http.MethodPost,
+			Middleware: nil,
+			Handler:    StCtl.DownloadResult},
 	})
 }

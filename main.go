@@ -5,7 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/lwabish/cloudnative-ai-server/config"
-	_ "github.com/lwabish/cloudnative-ai-server/controllers/sadtalker"
+	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/routes"
 	"github.com/lwabish/cloudnative-ai-server/utils"
@@ -34,17 +34,24 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	db.AutoMigrate(&models.Task{})
-
 	// 初始化任务队列
 	taskQueue := utils.NewTaskQueue(0)
+
+	controllers.Inject(&controllers.BaseControllerCfg{
+		DB: db,
+		Q:  taskQueue,
+		L:  logger,
+	})
+
+	db.AutoMigrate(&models.Task{})
 
 	// 启动工作goroutine
 	go StartWorker(taskQueue)
 
+	// 启动http server
 	router := gin.Default()
-
 	routes.RegisterRoutes(router)
-
-	logger.Fatal(router.Run(":" + cfg.ServerPort))
+	if err = router.Run(":8080"); err != nil {
+		panic(err)
+	}
 }

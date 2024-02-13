@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	BaseCtl = NewBaseController(&BaseControllerCfg{})
+	BaseCtl = &BaseController{}
 )
 
 type BaseController struct {
@@ -17,12 +17,20 @@ type BaseController struct {
 	L  *logrus.Logger
 }
 type BaseControllerCfg struct {
+	DB *gorm.DB
+	Q  *utils.TaskQueue
+	L  *logrus.Logger
 }
 
-func (b *BaseController) UpdateTaskStatus(task *models.Task) {
-	//b.DB.Update()
+func Inject(cfg *BaseControllerCfg) {
+	BaseCtl.Q = cfg.Q
+	BaseCtl.L = cfg.L
+	BaseCtl.DB = cfg.DB
 }
 
-func NewBaseController(_ *BaseControllerCfg) *BaseController {
-	return &BaseController{}
+func (b *BaseController) UpdateTaskStatus(uid string, status models.TaskStatus) {
+	r := b.DB.Update(&models.Task{Uid: uid}, "status", status)
+	if r.Error != nil {
+		b.L.Warnf("update task status error: %v", r.Error)
+	}
 }

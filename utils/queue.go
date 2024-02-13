@@ -33,12 +33,12 @@ func (q *TaskQueue) TaskOut() {
 	q.tasksList = q.tasksList[:len(q.tasksList)]
 }
 
-func (q *TaskQueue) FindTaskPosition(taskID uint) int {
+func (q *TaskQueue) FindTaskPosition(uid string) int {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 
 	for i, task := range q.tasksList {
-		if task.ID == taskID {
+		if task.Uid == uid {
 			return i // 找到任务，返回其在tasksList中的位置
 		}
 		// todo: 设置上限，如果超了返回-2，前端显示>1h

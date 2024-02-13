@@ -16,8 +16,8 @@ type TaskStatus string
 
 const (
 	TaskStatusPending   TaskStatus = "pending"
-	TASK_STATUS_RUNNING            = "running"
-	TASK_STATUS_SUCCESS            = "success"
-	TASK_STATUS_MISSING            = "missing_result"
-	TASK_STATUS_FAILED             = "failed"
+	TaskStatusRunning   TaskStatus = "running"
+	TaskStatusSuccess   TaskStatus = "success"
+	TASK_STATUS_MISSING TaskStatus = "missing_result"
+	TaskStatusFailed    TaskStatus = "failed"
 )

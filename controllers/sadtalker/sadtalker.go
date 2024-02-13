@@ -2,41 +2,47 @@ package sadtalker
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"github.com/google/uuid"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/models"
-	"github.com/lwabish/cloudnative-ai-server/utils"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
-	StCtl                   = newSadTalkerController(&cfg{})
+	StCtl                   = newController()
 	allowedUploadExtensions = []string{
-		"png", "jpg", "jpeg", "gif", "mp3", "wav", "m4a", "mp4",
+		".png", ".jpg", ".jpeg", ".gif", ".mp3", ".wav", ".m4a", ".mp4",
 	}
 )
 
 const (
-	uploadDir = ""
+	uploadDir = "uploads"
+	resultDir = "results"
 )
-
-func newSadTalkerController(_ *cfg) *controller {
-	return &controller{
-		BaseController: controllers.BaseCtl,
-		workerParam:    make(map[string]taskParam),
-	}
-}
 
 type controller struct {
 	*controllers.BaseController
-	workerParam map[string]taskParam
+	workerParam map[string]*taskParam
 	sync.Mutex
 }
 
-type cfg struct {
+func newController() *controller {
+	for controllers.BaseCtl == nil {
+		time.Sleep(100 * time.Millisecond)
+	}
+	return &controller{
+		BaseController: controllers.BaseCtl,
+		workerParam:    make(map[string]*taskParam),
+	}
+}
+
+// InjectCfg 如果sub controller有配置，通过main包调用注入配置和其他依赖
+func (s *controller) InjectCfg() {
+
 }
 
 // UploadFile 上传文件并创建任务
@@ -59,48 +65,43 @@ func (s *controller) UploadFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
 		return
 	}
+	p := &taskParam{
+		photo: photoPath,
+		audio: audioPath,
+	}
+
 	task := &models.Task{
-		Uid:    "",
+		Uid:    uuid.New().String(),
 		Type:   TaskType,
 		Status: models.TaskStatusPending,
 	}
-	s.DB.Create(task)
+	s.setParam(task.Uid, p)
+	if r := s.DB.Create(task); r.Error != nil {
+		s.L.Warnf("create task error: %v", r.Error)
+	}
+
 	s.Q.Enqueue(task)
 	c.JSON(http.StatusCreated, gin.H{"task_id": task.Uid})
 }
 
-// GetTaskStatus 查询任务状态，适应POST方法
-func GetTaskStatus(c *gin.Context, db *gorm.DB, taskQueue *utils.TaskQueue) {
-	taskID := c.PostForm("task_id")
+// GetTaskStatus 查询任务状态
+func (s *controller) GetTaskStatus(c *gin.Context) {
 	var task models.Task
-	if err := db.Where("id = ?", taskID).First(&task).Error; err != nil {
+	if err := s.DB.Where("uid = ?", c.PostForm("task_id")).First(&task).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 		return
 	}
 
-	position := taskQueue.FindTaskPosition(task.ID)
-
 	c.JSON(http.StatusOK, gin.H{
-		"id":       task.ID,
-		"status":   task.Status,
-		"position": position,
+		"id":     task.Uid,
+		"status": task.Status,
+		"index":  s.Q.FindTaskPosition(task.Uid),
 	})
 }
 
-// DownloadResult 下载任务结果，适应POST方法
-func DownloadResult(c *gin.Context, db *gorm.DB) {
-	taskID := c.PostForm("task_id")
-	var task models.Task
-	if err := db.Where("id = ?", taskID).First(&task).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-		return
-	}
-	if task.Status != "success" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Task is not completed"})
-		return
-	}
-	// 实际应用中应该根据task.Result提供文件下载
-	c.JSON(http.StatusOK, gin.H{"message": "Download API to be implemented"})
+// DownloadResult 下载任务结果
+func (s *controller) DownloadResult(c *gin.Context) {
+	c.FileAttachment(resultDir, c.PostForm("filename"))
 }
 
 func isAllowedExtension(fileName string) bool {
