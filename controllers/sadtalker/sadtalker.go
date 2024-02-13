@@ -1,7 +1,7 @@
 package sadtalker
 
 import (
-	"errors"
+	"github.com/jinzhu/copier"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"sync"
 	"time"
@@ -13,7 +13,8 @@ var (
 
 type controller struct {
 	*controllers.BaseController
-	workerParam map[string]*taskParam
+	workerParam  map[string]*taskParam
+	JobNamespace string
 	sync.Mutex
 }
 
@@ -27,6 +28,14 @@ func newController() *controller {
 	}
 }
 
-func (s *controller) Setup() {
-	panic(errors.New("not implemented"))
+type Cfg struct {
+	JobNamespace string
+}
+
+func (s *controller) Setup(cfg *Cfg) {
+	if err := copier.CopyWithOption(StCtl, cfg, copier.Option{
+		DeepCopy: true,
+	}); err != nil {
+		panic(err)
+	}
 }

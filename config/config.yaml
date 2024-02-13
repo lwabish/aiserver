@@ -1,5 +1,4 @@
-database_url: "root:root@tcp(10.10.10.103:3307)/ai-server?charset=utf8mb4&parseTime=True&loc=Local"
+database_url: "root:root@tcp(localhost:3307)/ai-server?charset=utf8mb4&parseTime=True&loc=Local"
 log_level: "debug"
-server_port: "8080"
 sadTalker:
-  python:
+  jobNamespace: default

@@ -6,6 +6,7 @@ import (
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
 )
 
 var (
@@ -16,11 +17,13 @@ type BaseController struct {
 	DB *gorm.DB
 	Q  *utils.TaskQueue
 	L  *logrus.Logger
+	C  *kubernetes.Clientset
 }
 type BaseControllerCfg struct {
 	DB *gorm.DB
 	Q  *utils.TaskQueue
 	L  *logrus.Logger
+	C  *kubernetes.Clientset
 }
 
 func (b *BaseController) Setup(cfg *BaseControllerCfg) {
