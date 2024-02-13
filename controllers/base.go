@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
@@ -22,10 +23,12 @@ type BaseControllerCfg struct {
 	L  *logrus.Logger
 }
 
-func Inject(cfg *BaseControllerCfg) {
-	BaseCtl.Q = cfg.Q
-	BaseCtl.L = cfg.L
-	BaseCtl.DB = cfg.DB
+func (b *BaseController) Setup(cfg *BaseControllerCfg) {
+	if err := copier.CopyWithOption(BaseCtl, cfg, copier.Option{
+		DeepCopy: true,
+	}); err != nil {
+		panic(err)
+	}
 }
 
 func (b *BaseController) UpdateTaskStatus(uid string, status models.TaskStatus) {

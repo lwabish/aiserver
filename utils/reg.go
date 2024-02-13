@@ -21,7 +21,7 @@ type RouteInfo struct {
 	Handler    gin.HandlerFunc
 }
 
-func RegisterGroupMiddleware(group RouteGroup, middlewares []gin.HandlerFunc) {
+func RegisterGroupMiddleware(group RouteGroup, middlewares ...gin.HandlerFunc) {
 	GroupMiddlewares[group] = middlewares
 }
 

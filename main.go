@@ -36,11 +36,12 @@ func main() {
 
 	taskQueue := utils.NewTaskQueue()
 
-	controllers.Inject(&controllers.BaseControllerCfg{
+	controllers.BaseCtl.Setup(&controllers.BaseControllerCfg{
 		DB: db,
 		Q:  taskQueue,
 		L:  logger,
 	})
+	controllers.MidCtl.Setup(&controllers.MiddlewareControllerCfg{L: logger, TicketExpire: false})
 
 	db.AutoMigrate(&models.Task{})
 

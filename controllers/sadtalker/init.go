@@ -1,6 +1,7 @@
 package sadtalker
 
 import (
+	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"net/http"
 )
@@ -25,4 +26,5 @@ func init() {
 			Middleware: nil,
 			Handler:    StCtl.DownloadResult},
 	})
+	utils.RegisterGroupMiddleware(group, controllers.MidCtl.Authenticate)
 }
