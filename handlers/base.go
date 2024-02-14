@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"github.com/jinzhu/gorm"
@@ -9,30 +9,30 @@ import (
 )
 
 var (
-	BaseCtl = &BaseController{}
+	BaseHdl = &BaseHandler{}
 )
 
-type BaseController struct {
+type BaseHandler struct {
 	DB *gorm.DB
 	Q  *utils.TaskQueue
 	L  *logrus.Logger
 	C  *kubernetes.Clientset
 }
-type BaseControllerCfg struct {
+type BaseHandlerCfg struct {
 	DB *gorm.DB
 	Q  *utils.TaskQueue
 	L  *logrus.Logger
 	C  *kubernetes.Clientset
 }
 
-func (b *BaseController) Setup(cfg *BaseControllerCfg) {
+func (b *BaseHandler) Setup(cfg *BaseHandlerCfg) {
 	b.DB = cfg.DB
 	b.Q = cfg.Q
 	b.L = cfg.L
 	b.C = cfg.C
 }
 
-func (b *BaseController) UpdateTaskStatus(uid string, status models.TaskStatus) {
+func (b *BaseHandler) UpdateTaskStatus(uid string, status models.TaskStatus) {
 	r := b.DB.
 		Model(&models.Task{}).
 		Where("uid = ?", uid).

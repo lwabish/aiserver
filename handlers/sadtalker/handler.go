@@ -21,7 +21,7 @@ const (
 )
 
 // UploadFile 上传文件并创建任务
-func (s *controller) UploadFile(c *gin.Context) {
+func (s *handler) UploadFile(c *gin.Context) {
 	photo, pErr := c.FormFile("photo")
 	audio, aErr := c.FormFile("audio")
 	if pErr != nil || aErr != nil || photo.Filename == "" || audio.Filename == "" {
@@ -60,7 +60,7 @@ func (s *controller) UploadFile(c *gin.Context) {
 }
 
 // GetTaskStatus 查询任务状态
-func (s *controller) GetTaskStatus(c *gin.Context) {
+func (s *handler) GetTaskStatus(c *gin.Context) {
 	var task models.Task
 	if err := s.DB.Where("uid = ?", c.PostForm("task_id")).First(&task).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -75,7 +75,7 @@ func (s *controller) GetTaskStatus(c *gin.Context) {
 }
 
 // DownloadResult 下载任务结果
-func (s *controller) DownloadResult(c *gin.Context) {
+func (s *handler) DownloadResult(c *gin.Context) {
 	c.FileAttachment(resultDir, c.PostForm("filename"))
 }
 

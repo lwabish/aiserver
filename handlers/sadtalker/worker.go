@@ -18,7 +18,7 @@ func (p taskParam) String() string {
 	return p.photo + "|" + p.audio
 }
 
-func (s *controller) Process(task *models.Task) {
+func (s *handler) Process(task *models.Task) {
 	s.UpdateTaskStatus(task.Uid, models.TaskStatusRunning)
 	var err error
 	defer func() {
@@ -31,7 +31,7 @@ func (s *controller) Process(task *models.Task) {
 	err = s.createJob(task, p)
 }
 
-func (s *controller) createJob(task *models.Task, p *taskParam) error {
+func (s *handler) createJob(task *models.Task, p *taskParam) error {
 	j := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{Name: task.Uid, Namespace: s.JobNamespace},
 		Spec: batchv1.JobSpec{
@@ -68,13 +68,13 @@ func (s *controller) createJob(task *models.Task, p *taskParam) error {
 	return err
 }
 
-func (s *controller) getParam(uid string) *taskParam {
+func (s *handler) getParam(uid string) *taskParam {
 	s.Lock()
 	defer s.Unlock()
 	return s.workerParam[uid]
 }
 
-func (s *controller) setParam(uid string, param *taskParam) {
+func (s *handler) setParam(uid string, param *taskParam) {
 	s.Lock()
 	defer s.Unlock()
 	s.workerParam[uid] = param

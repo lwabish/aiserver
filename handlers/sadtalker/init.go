@@ -1,7 +1,7 @@
 package sadtalker
 
 import (
-	"github.com/lwabish/cloudnative-ai-server/controllers"
+	"github.com/lwabish/cloudnative-ai-server/handlers"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"net/http"
 )
@@ -16,15 +16,15 @@ func init() {
 		{Path: "upload",
 			Method:     http.MethodPost,
 			Middleware: nil,
-			Handler:    StCtl.UploadFile},
+			Handler:    StHdl.UploadFile},
 		{Path: "status",
 			Method:     http.MethodPost,
 			Middleware: nil,
-			Handler:    StCtl.GetTaskStatus},
+			Handler:    StHdl.GetTaskStatus},
 		{Path: "download",
 			Method:     http.MethodPost,
 			Middleware: nil,
-			Handler:    StCtl.DownloadResult},
+			Handler:    StHdl.DownloadResult},
 	})
-	utils.RegisterGroupMiddleware(group, controllers.MidCtl.Authenticate)
+	utils.RegisterGroupMiddleware(group, handlers.MidHdl.Authenticate)
 }

@@ -2,7 +2,4 @@
 
 ## todo
 
-- job
-- config
 - controller
-

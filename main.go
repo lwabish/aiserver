@@ -6,8 +6,8 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/lwabish/cloudnative-ai-server/config"
-	"github.com/lwabish/cloudnative-ai-server/controllers"
-	"github.com/lwabish/cloudnative-ai-server/controllers/sadtalker"
+	"github.com/lwabish/cloudnative-ai-server/handlers"
+	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/routes"
 	"github.com/lwabish/cloudnative-ai-server/utils"
@@ -45,14 +45,14 @@ func main() {
 
 	taskQueue := utils.NewTaskQueue()
 
-	controllers.BaseCtl.Setup(&controllers.BaseControllerCfg{
+	handlers.BaseHdl.Setup(&handlers.BaseHandlerCfg{
 		DB: db,
 		Q:  taskQueue,
 		L:  logger,
 		C:  initClientSet(),
 	})
-	controllers.MidCtl.Setup(&controllers.MiddlewareControllerCfg{L: logger, TicketExpire: false})
-	sadtalker.StCtl.Setup(&sadtalker.Cfg{JobNamespace: cfg.SadTalker.JobNamespace})
+	handlers.MidHdl.Setup(&handlers.MiddlewareHandlerCfg{L: logger, TicketExpire: false})
+	sadtalker.StHdl.Setup(&sadtalker.Cfg{JobNamespace: cfg.SadTalker.JobNamespace})
 
 	db.AutoMigrate(&models.Task{})
 
@@ -63,7 +63,6 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	// 启动工作goroutine
 	go StartWorker(taskQueue)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -73,7 +72,6 @@ func main() {
 		}
 	}()
 
-	// 启动http server
 	router := gin.Default()
 	routes.RegisterRoutes(router)
 	if err = router.Run(":8080"); err != nil {

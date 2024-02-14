@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"crypto/rand"
@@ -23,25 +23,25 @@ const (
 )
 
 var (
-	MidCtl = &MiddlewareController{}
+	MidHdl = &MiddlewareHandler{}
 )
 
-type MiddlewareController struct {
+type MiddlewareHandler struct {
 	L            *logrus.Logger
 	TicketExpire bool
 }
 
-type MiddlewareControllerCfg struct {
+type MiddlewareHandlerCfg struct {
 	L            *logrus.Logger
 	TicketExpire bool
 }
 
-func (m *MiddlewareController) Setup(cfg *MiddlewareControllerCfg) {
+func (m *MiddlewareHandler) Setup(cfg *MiddlewareHandlerCfg) {
 	m.L = cfg.L
 	m.TicketExpire = cfg.TicketExpire
 }
 
-func (m *MiddlewareController) Authenticate(c *gin.Context) {
+func (m *MiddlewareHandler) Authenticate(c *gin.Context) {
 	openid := c.PostForm(authOpenIDName)
 	ticket := c.PostForm(authTicketName)
 

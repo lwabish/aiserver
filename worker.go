@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/lwabish/cloudnative-ai-server/controllers/sadtalker"
+	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"time"
@@ -21,7 +21,7 @@ func StartWorker(queue *utils.TaskQueue) {
 func processTask(task *models.Task) {
 	switch task.Type {
 	case sadtalker.TaskType:
-		sadtalker.StCtl.Process(task)
+		sadtalker.StHdl.Process(task)
 	default:
 		panic(fmt.Errorf("unknown task type: %s", task.Type))
 	}
