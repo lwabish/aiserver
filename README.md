@@ -4,3 +4,5 @@
 
 - job
 - config
+- controller
+

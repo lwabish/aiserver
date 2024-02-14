@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -18,6 +19,8 @@ import (
 	"log"
 	"os"
 	"path"
+	ctrl "sigs.k8s.io/controller-runtime"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
 func main() {
@@ -53,8 +56,22 @@ func main() {
 
 	db.AutoMigrate(&models.Task{})
 
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		Metrics: metricsserver.Options{BindAddress: "0"},
+	})
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	// 启动工作goroutine
 	go StartWorker(taskQueue)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		if err = mgr.Start(ctx); err != nil {
+			logger.Fatalf("%v", err)
+		}
+	}()
 
 	// 启动http server
 	router := gin.Default()
@@ -62,6 +79,7 @@ func main() {
 	if err = router.Run(":8080"); err != nil {
 		panic(err)
 	}
+	cancel()
 }
 
 func initClientSet() *kubernetes.Clientset {
