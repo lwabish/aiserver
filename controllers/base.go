@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
@@ -27,11 +26,10 @@ type BaseControllerCfg struct {
 }
 
 func (b *BaseController) Setup(cfg *BaseControllerCfg) {
-	if err := copier.CopyWithOption(BaseCtl, cfg, copier.Option{
-		DeepCopy: true,
-	}); err != nil {
-		panic(err)
-	}
+	b.DB = cfg.DB
+	b.Q = cfg.Q
+	b.L = cfg.L
+	b.C = cfg.C
 }
 
 func (b *BaseController) UpdateTaskStatus(uid string, status models.TaskStatus) {

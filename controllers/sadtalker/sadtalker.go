@@ -1,7 +1,6 @@
 package sadtalker
 
 import (
-	"github.com/jinzhu/copier"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"sync"
 	"time"
@@ -33,9 +32,5 @@ type Cfg struct {
 }
 
 func (s *controller) Setup(cfg *Cfg) {
-	if err := copier.CopyWithOption(StCtl, cfg, copier.Option{
-		DeepCopy: true,
-	}); err != nil {
-		panic(err)
-	}
+	s.JobNamespace = cfg.JobNamespace
 }

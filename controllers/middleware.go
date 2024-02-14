@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -38,11 +37,8 @@ type MiddlewareControllerCfg struct {
 }
 
 func (m *MiddlewareController) Setup(cfg *MiddlewareControllerCfg) {
-	if err := copier.CopyWithOption(MidCtl, cfg, copier.Option{
-		DeepCopy: true,
-	}); err != nil {
-		panic(err)
-	}
+	m.L = cfg.L
+	m.TicketExpire = cfg.TicketExpire
 }
 
 func (m *MiddlewareController) Authenticate(c *gin.Context) {
