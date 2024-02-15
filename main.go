@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog/v2"
 	"log"
 	"os"
 	"path"
@@ -59,6 +60,7 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Metrics: metricsserver.Options{BindAddress: "0"},
+		Logger:  klog.NewKlogr(),
 	})
 	if err != nil {
 		logger.Fatal(err)
@@ -67,6 +69,7 @@ func main() {
 	err = (&controllers.SadTalkerJobReconciler{
 		Client:      mgr.GetClient(),
 		BaseHandler: handlers.BaseHdl,
+		Logger:      mgr.GetLogger().WithName("sad-talker-reconciler"),
 	}).SetupWithManager(mgr)
 	if err != nil {
 		logger.Fatalln(err)

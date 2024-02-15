@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"github.com/go-logr/logr"
 	"github.com/lwabish/cloudnative-ai-server/handlers"
 	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	batchv1 "k8s.io/api/batch/v1"
+	"regexp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -16,17 +18,34 @@ import (
 type SadTalkerJobReconciler struct {
 	client.Client
 	*handlers.BaseHandler
+	logr.Logger
 }
 
 func (r *SadTalkerJobReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	job := &batchv1.Job{}
 	if err := r.Get(ctx, req.NamespacedName, job); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if !jobSucceeded(job) {
+		return ctrl.Result{}, nil
+	}
+	r.Info("Job succeeded", "uid", job.Name)
+	r.UpdateTaskStatus(job.Name, models.TaskStatusSuccess)
+
+	logString, err := getPodLogString(r.C, job.Name, job.Namespace)
+	if err != nil {
+		r.UpdateTaskStatus(job.Name, models.TaskStatusResultMissing)
 		return ctrl.Result{}, err
 	}
 
-	if jobSucceed(job) {
-		r.UpdateTaskStatus(job.Name, models.TaskStatusSuccess)
+	if result := extractResult(logString); result != "" {
+		r.SaveTaskResult(job.Name, result)
+	} else {
+		r.UpdateTaskStatus(job.Name, models.TaskStatusResultMissing)
+		return ctrl.Result{}, err
 	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -61,12 +80,14 @@ func filterSadTalkerJob(job *batchv1.Job) bool {
 	return job.Annotations[utils.TaskTypeKey] == sadtalker.JobType
 }
 
-func jobSucceed(job *batchv1.Job) bool {
-	complete := false
-	for _, condition := range job.Status.Conditions {
-		if condition.Type == batchv1.JobComplete {
-			complete = true
-		}
+func extractResult(log string) string {
+	re := regexp.MustCompile(`\./results/\d{4}_\d{2}_\d{2}_\d{2}\.\d{2}\.\d{2}\.mp4\n`)
+	match := re.FindString(log)
+	if match == "" {
+		return match
 	}
-	return complete && *job.Spec.Completions == job.Status.Succeeded
+	// 去除匹配字符串两端的换行符和"./results/"
+	result := match[:len(match)-1] // 移除尾部的换行符
+	result = result[10:]           // 移除前面的"./results/"
+	return result
 }

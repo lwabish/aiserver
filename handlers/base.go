@@ -41,3 +41,13 @@ func (b *BaseHandler) UpdateTaskStatus(uid string, status models.TaskStatus) {
 		b.L.Warnf("update task status error: %v", r.Error)
 	}
 }
+
+func (b *BaseHandler) SaveTaskResult(uid string, result string) {
+	r := b.DB.
+		Model(&models.Task{}).
+		Where("uid = ?", uid).
+		Update("result", result)
+	if r.Error != nil || r.RowsAffected != 1 {
+		b.L.Warnf("update task result error: %v", r.Error)
+	}
+}

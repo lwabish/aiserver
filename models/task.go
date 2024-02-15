@@ -18,5 +18,7 @@ const (
 	TaskStatusPending TaskStatus = "pending"
 	TaskStatusRunning TaskStatus = "running"
 	TaskStatusSuccess TaskStatus = "success"
-	TaskStatusFailed  TaskStatus = "failed"
+
+	TaskStatusResultMissing TaskStatus = "result_missing"
+	TaskStatusFailed        TaskStatus = "failed"
 )
