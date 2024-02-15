@@ -3,10 +3,15 @@ package sadtalker
 import (
 	"context"
 	"github.com/lwabish/cloudnative-ai-server/models"
+	"github.com/lwabish/cloudnative-ai-server/utils"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	JobType = "sad-talker"
 )
 
 type taskParam struct {
@@ -33,7 +38,13 @@ func (s *handler) Process(task *models.Task) {
 
 func (s *handler) createJob(task *models.Task, p *taskParam) error {
 	j := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: task.Uid, Namespace: s.JobNamespace},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      task.Uid,
+			Namespace: s.JobNamespace,
+			Annotations: map[string]string{
+				utils.TaskTypeKey: JobType,
+			},
+		},
 		Spec: batchv1.JobSpec{
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{

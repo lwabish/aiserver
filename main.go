@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/lwabish/cloudnative-ai-server/config"
+	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/handlers"
 	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
@@ -61,6 +62,14 @@ func main() {
 	})
 	if err != nil {
 		logger.Fatal(err)
+	}
+
+	err = (&controllers.SadTalkerJobReconciler{
+		Client:      mgr.GetClient(),
+		BaseHandler: handlers.BaseHdl,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		logger.Fatalln(err)
 	}
 
 	go StartWorker(taskQueue)

@@ -71,6 +71,7 @@ func (m *MiddlewareHandler) Authenticate(c *gin.Context) {
 }
 
 func decryptTicket(ticket string) (string, error) {
+	// fixme: pre load to mem
 	privateKey, err := os.ReadFile(authPrivateKeyPath)
 	if err != nil {
 		return "", err
