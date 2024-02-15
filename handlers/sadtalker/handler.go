@@ -71,6 +71,7 @@ func (s *handler) GetTaskStatus(c *gin.Context) {
 		"id":     task.Uid,
 		"status": task.Status,
 		"index":  s.Q.FindTaskPosition(task.Uid),
+		"result": task.Result,
 	})
 }
 
