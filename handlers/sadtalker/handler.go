@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -77,7 +78,8 @@ func (s *handler) GetTaskStatus(c *gin.Context) {
 
 // DownloadResult 下载任务结果
 func (s *handler) DownloadResult(c *gin.Context) {
-	c.FileAttachment(resultDir, c.PostForm("filename"))
+	fileName := c.PostForm("filename")
+	c.FileAttachment(path.Join(resultDir, fileName), fileName)
 }
 
 func isAllowedExtension(fileName string) bool {
