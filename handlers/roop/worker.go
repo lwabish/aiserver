@@ -3,6 +3,7 @@ package roop
 import (
 	"fmt"
 	"github.com/lwabish/cloudnative-ai-server/models"
+	"github.com/lwabish/cloudnative-ai-server/utils"
 	"os"
 	"os/exec"
 	"path"
@@ -29,7 +30,7 @@ func (h *handler) invoke(task *models.Task, p *taskParam) error {
 	}
 
 	ext := filepath.Ext(p.target)
-	resultFileName := fmt.Sprintf("%s.%s", time.Now().Format("2006_01_02_15.04.05"), ext)
+	resultFileName := fmt.Sprintf("%s%s", time.Now().Format("2006_01_02_15.04.05"), ext)
 	args := []string{
 		"run.py",
 		"-s",
@@ -37,7 +38,7 @@ func (h *handler) invoke(task *models.Task, p *taskParam) error {
 		"-t",
 		path.Join(curDir, p.target),
 		"-o",
-		path.Join(curDir, "results"+resultFileName),
+		path.Join(curDir, fmt.Sprintf("%s/%s", utils.ResultDir, resultFileName)),
 	}
 	h.L.Debugf("roop command: %s %v %v", h.pythonPath, args, h.extraArgs)
 	cmd := exec.Command(h.pythonPath, append(args, h.extraArgs...)...)
