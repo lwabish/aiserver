@@ -1,10 +1,13 @@
 package roop
 
 import (
+	"fmt"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"time"
 )
 
 type taskParam struct {
@@ -24,6 +27,9 @@ func (h *handler) invoke(task *models.Task, p *taskParam) error {
 	if err != nil {
 		return err
 	}
+
+	ext := filepath.Ext(p.target)
+	resultFileName := fmt.Sprintf("%s.%s", time.Now().Format("2006_01_02_15.04.05"), ext)
 	args := []string{
 		"run.py",
 		"-s",
@@ -31,7 +37,7 @@ func (h *handler) invoke(task *models.Task, p *taskParam) error {
 		"-t",
 		path.Join(curDir, p.target),
 		"-o",
-		path.Join(curDir, "results"),
+		path.Join(curDir, "results"+resultFileName),
 	}
 	h.L.Debugf("roop command: %s %v %v", h.pythonPath, args, h.extraArgs)
 	cmd := exec.Command(h.pythonPath, append(args, h.extraArgs...)...)
@@ -43,13 +49,8 @@ func (h *handler) invoke(task *models.Task, p *taskParam) error {
 	}
 
 	h.L.Debugf("roop stdout: %s", output)
-	//if result := ParseResult(string(output)); result != "" {
-	//	s.SaveTaskResult(task.Uid, result)
-	//	s.UpdateTaskStatus(task.Uid, models.TaskStatusSuccess)
-	//} else {
-	//	s.L.Warnf("sadtalker result not found: %s", task.Uid)
-	//	s.UpdateTaskStatus(task.Uid, models.TaskStatusResultMissing)
-	//}
+	h.SaveTaskResult(task.Uid, resultFileName)
+	h.UpdateTaskStatus(task.Uid, models.TaskStatusSuccess)
 	return nil
 }
 
