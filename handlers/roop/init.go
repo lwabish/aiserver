@@ -17,14 +17,6 @@ func init() {
 			Method:     http.MethodPost,
 			Middleware: nil,
 			Handler:    Handler.UploadFile},
-		{Path: "status",
-			Method:     http.MethodPost,
-			Middleware: nil,
-			Handler:    Handler.GetTaskStatus},
-		{Path: "download",
-			Method:     http.MethodPost,
-			Middleware: nil,
-			Handler:    Handler.DownloadResult},
 	})
 	utils.RegisterGroupMiddleware(group, handlers.MidHdl.Authenticate)
 }

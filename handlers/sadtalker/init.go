@@ -17,6 +17,7 @@ func init() {
 			Method:     http.MethodPost,
 			Middleware: nil,
 			Handler:    StHdl.UploadFile},
+		// todo: 移到base，废弃
 		{Path: "status",
 			Method:     http.MethodPost,
 			Middleware: nil,
