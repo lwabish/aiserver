@@ -2,6 +2,7 @@ package sadtalker
 
 import (
 	"context"
+	"github.com/lwabish/cloudnative-ai-server/handlers"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	batchv1 "k8s.io/api/batch/v1"
@@ -10,7 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (s *handler) createJob(task *models.Task, _ *taskParam) error {
+func (s *handler) createJob(task *models.Task, _ handlers.TaskParam) error {
 	j := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      task.Uid,

@@ -1,6 +1,8 @@
 package sadtalker
 
 import (
+	"fmt"
+	"github.com/lwabish/cloudnative-ai-server/handlers"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"os"
 	"os/exec"
@@ -18,33 +20,13 @@ func (p taskParam) String() string {
 	return p.photo + "|" + p.audio
 }
 
-func (s *handler) getParam(uid string) *taskParam {
-	s.Lock()
-	defer s.Unlock()
-	return s.workerParam[uid]
-}
+func (s *handler) invoke(task *models.Task, tp handlers.TaskParam) error {
+	var p *taskParam
+	var ok bool
+	if p, ok = tp.(*taskParam); !ok {
+		return fmt.Errorf("task param type error")
+	}
 
-func (s *handler) setParam(uid string, param *taskParam) {
-	s.Lock()
-	defer s.Unlock()
-	s.workerParam[uid] = param
-}
-
-func (s *handler) Process(task *models.Task) {
-	s.UpdateTaskStatus(task.Uid, models.TaskStatusRunning)
-	var err error
-	defer func() {
-		if err != nil {
-			s.L.Errorf("Process sad talker task failed: %s %s", task.Uid, err.Error())
-			s.UpdateTaskStatus(task.Uid, models.TaskStatusFailed)
-		}
-	}()
-	p := s.getParam(task.Uid)
-	s.L.Infof("Processing sad talker task: %s %s", task.Uid, p)
-	err = s.workerFunc(task, p)
-}
-
-func (s *handler) invoke(task *models.Task, p *taskParam) error {
 	curDir, err := os.Getwd()
 	if err != nil {
 		return err

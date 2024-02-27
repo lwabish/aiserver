@@ -2,6 +2,7 @@ package roop
 
 import (
 	"fmt"
+	"github.com/lwabish/cloudnative-ai-server/handlers"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"os"
@@ -23,7 +24,12 @@ func (p taskParam) String() string {
 	return p.source + "|" + p.target
 }
 
-func (h *handler) invoke(task *models.Task, p *taskParam) error {
+func (h *handler) invoke(task *models.Task, tp handlers.TaskParam) error {
+	var p *taskParam
+	var ok bool
+	if p, ok = tp.(*taskParam); !ok {
+		return fmt.Errorf("task param type error")
+	}
 	curDir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -53,16 +59,4 @@ func (h *handler) invoke(task *models.Task, p *taskParam) error {
 	h.SaveTaskResult(task.Uid, resultFileName)
 	h.UpdateTaskStatus(task.Uid, models.TaskStatusSuccess)
 	return nil
-}
-
-func (h *handler) getParam(uid string) *taskParam {
-	h.Lock()
-	defer h.Unlock()
-	return h.workerParam[uid]
-}
-
-func (h *handler) setParam(uid string, param *taskParam) {
-	h.Lock()
-	defer h.Unlock()
-	h.workerParam[uid] = param
 }

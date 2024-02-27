@@ -17,5 +17,4 @@ func init() {
 			Handler:    BaseHdl.DownloadResult},
 	})
 	utils.RegisterGroupMiddleware(utils.RootGroup, MidHdl.Authenticate)
-
 }

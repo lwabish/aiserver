@@ -1,19 +1,23 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"k8s.io/client-go/kubernetes"
-	"net/http"
-	"path"
+	"sync"
 )
 
 var (
-	BaseHdl = &BaseHandler{}
+	BaseHdl = newController()
 )
+
+type TaskParam interface {
+	String() string
+}
+
+type WorkerFunc func(task *models.Task, tp TaskParam) error
 
 type BaseHandler struct {
 	DB *gorm.DB
@@ -22,7 +26,22 @@ type BaseHandler struct {
 	// nil -> bare metal
 	// non nil -> k8s
 	C *kubernetes.Clientset
+
+	// fixme: 老化gc
+	// some svc -> map[uid]TaskParam
+	TaskParams  map[string]map[string]TaskParam
+	TaskWorkers map[string]WorkerFunc
+	sync.Mutex
 }
+
+func newController() *BaseHandler {
+	b := &BaseHandler{
+		TaskParams:  map[string]map[string]TaskParam{},
+		TaskWorkers: map[string]WorkerFunc{},
+	}
+	return b
+}
+
 type BaseHandlerCfg struct {
 	DB *gorm.DB
 	Q  *utils.TaskQueue
@@ -38,6 +57,30 @@ func (b *BaseHandler) Setup(cfg *BaseHandlerCfg) {
 
 func (b *BaseHandler) SetupCloudNative(cfg *BaseHandlerCfg) {
 	b.C = cfg.C
+}
+
+func (b *BaseHandler) SetWorkerFunc(t string, f WorkerFunc) {
+	b.Lock()
+	defer b.Unlock()
+	b.TaskWorkers[t] = f
+}
+
+func (b *BaseHandler) SetTaskParam(t string, uid string, param TaskParam) {
+	b.Lock()
+	defer b.Unlock()
+	if b.TaskParams[t] == nil {
+		b.TaskParams[t] = make(map[string]TaskParam)
+	}
+	b.TaskParams[t][uid] = param
+}
+
+func (b *BaseHandler) GetTaskParam(t, uid string) TaskParam {
+	b.Lock()
+	defer b.Unlock()
+	if b.TaskParams[t] == nil {
+		return nil
+	}
+	return b.TaskParams[t][uid]
 }
 
 func (b *BaseHandler) UpdateTaskStatus(uid string, status models.TaskStatus) {
@@ -60,24 +103,17 @@ func (b *BaseHandler) SaveTaskResult(uid string, result string) {
 	}
 }
 
-// DownloadResult 下载任务结果
-func (b *BaseHandler) DownloadResult(c *gin.Context) {
-	fileName := c.PostForm("filename")
-	c.FileAttachment(path.Join(utils.ResultDir, fileName), fileName)
-}
-
-// GetTaskStatus 查询任务状态
-func (b *BaseHandler) GetTaskStatus(c *gin.Context) {
-	var task models.Task
-	if err := b.DB.Where("uid = ?", c.PostForm("task_id")).First(&task).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"id":     task.Uid,
-		"status": task.Status,
-		"index":  b.Q.FindTaskPosition(task.Uid),
-		"result": task.Result,
-	})
+func (b *BaseHandler) Process(task *models.Task) {
+	b.UpdateTaskStatus(task.Uid, models.TaskStatusRunning)
+	var err error
+	defer func() {
+		if err != nil {
+			b.L.Errorf("Process task failed: %s %s", task.Uid, err.Error())
+			b.UpdateTaskStatus(task.Uid, models.TaskStatusFailed)
+		}
+	}()
+	p := b.GetTaskParam(task.Type, task.Uid)
+	b.L.Infof("Processing task: %s %s", task.Uid, p)
+	workerFunc := b.TaskWorkers[task.Type]
+	err = workerFunc(task, p)
 }

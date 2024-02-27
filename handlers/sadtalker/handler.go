@@ -45,7 +45,7 @@ func (s *handler) UploadFile(c *gin.Context) {
 		Type:   TaskType,
 		Status: models.TaskStatusPending,
 	}
-	s.setParam(task.Uid, p)
+	s.SetTaskParam(TaskType, task.Uid, p)
 	if r := s.DB.Create(task); r.Error != nil {
 		s.L.Warnf("create task error: %v", r.Error)
 	}
