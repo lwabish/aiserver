@@ -34,9 +34,9 @@ func newHandler() *handler {
 
 func (s *handler) Setup(cfg *config.Config) {
 	if s.C == nil {
-		s.workerFunc = s.createJob
-	} else {
 		s.workerFunc = s.invokeSadTalker
 		s.pythonPath = cfg.BareMetal.SadTalker.PythonPath
+	} else {
+		s.workerFunc = s.createJob
 	}
 }

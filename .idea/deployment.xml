@@ -6,7 +6,7 @@
       <paths name="ws">
         <serverdata>
           <mappings>
-            <mapping deploy="/ai-server" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/go/src/cloudnative-ai-server" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
