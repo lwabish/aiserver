@@ -13,15 +13,23 @@ func StartWorker(queue *utils.TaskQueue) {
 		time.Sleep(1 * time.Second)
 		if queue.Len() != 0 {
 			t := queue.PopFront()
-			processTask(t)
+			dispatchTask(t)
 		}
 	}
 }
 
-func processTask(task *models.Task) {
+type TaskProcessor interface {
+	Process(*models.Task)
+}
+
+func processTask(task *models.Task, tp TaskProcessor) {
+	tp.Process(task)
+}
+
+func dispatchTask(task *models.Task) {
 	switch task.Type {
 	case sadtalker.TaskType:
-		sadtalker.StHdl.Process(task)
+		processTask(task, sadtalker.StHdl)
 	default:
 		panic(fmt.Errorf("unknown task type: %s", task.Type))
 	}

@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -16,7 +16,9 @@ type BaseHandler struct {
 	DB *gorm.DB
 	Q  *utils.TaskQueue
 	L  *logrus.Logger
-	C  *kubernetes.Clientset
+	// nil -> bare metal
+	// non nil -> k8s
+	C *kubernetes.Clientset
 }
 type BaseHandlerCfg struct {
 	DB *gorm.DB
@@ -29,6 +31,9 @@ func (b *BaseHandler) Setup(cfg *BaseHandlerCfg) {
 	b.DB = cfg.DB
 	b.Q = cfg.Q
 	b.L = cfg.L
+}
+
+func (b *BaseHandler) SetupCloudNative(cfg *BaseHandlerCfg) {
 	b.C = cfg.C
 }
 

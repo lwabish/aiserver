@@ -6,15 +6,25 @@ import (
 )
 
 type Config struct {
-	DatabaseURL string `mapstructure:"database_url"`
-	LogLevel    string `mapstructure:"log_level"`
-	Auth        struct {
-		TokenExpire      bool
-		TokenValidPeriod int64 `mapstructure:"token_valid_period"`
-		TokenThreshold   int64 `mapstructure:"token_threshold"`
+	LogLevel string `yaml:"logLevel"`
+	Db       struct {
+		Driver string `yaml:"driver"`
+		Mysql  string `yaml:"mysql"`
 	}
-	SadTalker struct {
-		JobNamespace string
+	Mode string `yaml:"mode"`
+	Auth struct {
+		TokenExpire      bool  `yaml:"tokenExpire"`
+		TokenValidPeriod int64 `yaml:"tokenValidPeriod"`
+	}
+	BareMetal struct {
+		SadTalker struct {
+			PythonPath string `yaml:"pythonPath"`
+		}
+	}
+	CloudNative struct {
+		SadTalker struct {
+			JobNamespace string `yaml:"jobNamespace"`
+		}
 	}
 }
 

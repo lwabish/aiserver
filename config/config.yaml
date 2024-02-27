@@ -1,4 +1,17 @@
-database_url: "root:root@tcp(localhost:3307)/ai-server?charset=utf8mb4&parseTime=True&loc=Local"
-log_level: "debug"
-sadTalker:
-  jobNamespace: default
+logLevel: "debug"
+db:
+  driver: "sqlite"
+  mysql: "root:root@tcp(localhost:3307)/ai-server?charset=utf8mb4&parseTime=True&loc=Local"
+# 真实ai服务调用方式
+# bare-metal
+# cloud-native
+mode: "bare-metal"
+auth:
+  tokenExpire: false
+  tokenValidPeriod: 60
+bareMetal:
+  sadTalker:
+    pythonPath: python
+cloudNative:
+  sadTalker:
+    jobNamespace: default

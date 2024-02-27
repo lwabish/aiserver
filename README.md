@@ -1,5 +1,6 @@
 # cloudNative-ai-server
 
-## todo
+## non-cloudNative-way
 
-- controller
+
+## cloudNative-way

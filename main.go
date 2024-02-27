@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/lwabish/cloudnative-ai-server/config"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/handlers"
@@ -13,6 +11,9 @@ import (
 	"github.com/lwabish/cloudnative-ai-server/routes"
 	"github.com/lwabish/cloudnative-ai-server/utils"
 	"github.com/sirupsen/logrus"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -37,11 +38,17 @@ func main() {
 	}
 	logger := utils.NewLogger(level)
 
-	db, err := gorm.Open("mysql", cfg.DatabaseURL)
-	defer func(db *gorm.DB) {
-		logger.Fatal(db.Close())
-	}(db)
+	var db *gorm.DB
+	switch cfg.Db.Driver {
+	case "sqlite":
+		db, err = gorm.Open(sqlite.Open("task.db"), &gorm.Config{})
+	case "mysql":
+		db, err = gorm.Open(mysql.Open(cfg.Db.Mysql), &gorm.Config{})
+	}
 	if err != nil {
+		logger.Fatal(err)
+	}
+	if err = db.AutoMigrate(&models.Task{}); err != nil {
 		logger.Fatal(err)
 	}
 
@@ -51,13 +58,29 @@ func main() {
 		DB: db,
 		Q:  taskQueue,
 		L:  logger,
-		C:  initClientSet(),
 	})
-	handlers.MidHdl.Setup(&handlers.MiddlewareHandlerCfg{L: logger, TicketExpire: false})
-	sadtalker.StHdl.Setup(&sadtalker.Cfg{JobNamespace: cfg.SadTalker.JobNamespace})
+	handlers.MidHdl.Setup(&handlers.MiddlewareHandlerCfg{L: logger, TicketExpire: cfg.Auth.TokenExpire})
+	sadtalker.StHdl.Setup(&cfg)
 
-	db.AutoMigrate(&models.Task{})
+	go StartWorker(taskQueue)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	if cfg.Mode == "cloud-native" {
+		go enableController(ctx, logger)
+		handlers.BaseHdl.SetupCloudNative(&handlers.BaseHandlerCfg{
+			C: initClientSet(),
+		})
+	}
+
+	router := gin.Default()
+	routes.RegisterRoutes(router)
+	if err = router.Run(":8080"); err != nil {
+		panic(err)
+	}
+	cancel()
+}
+
+func enableController(ctx context.Context, logger *logrus.Logger) {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Metrics: metricsserver.Options{BindAddress: "0"},
 		Logger:  klog.NewKlogr(),
@@ -75,21 +98,9 @@ func main() {
 		logger.Fatalln(err)
 	}
 
-	go StartWorker(taskQueue)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		if err = mgr.Start(ctx); err != nil {
-			logger.Fatalf("%v", err)
-		}
-	}()
-
-	router := gin.Default()
-	routes.RegisterRoutes(router)
-	if err = router.Run(":8080"); err != nil {
-		panic(err)
+	if err = mgr.Start(ctx); err != nil {
+		logger.Fatalf("%v", err)
 	}
-	cancel()
 }
 
 func initClientSet() *kubernetes.Clientset {
