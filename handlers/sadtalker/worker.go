@@ -2,8 +2,11 @@ package sadtalker
 
 import (
 	"github.com/lwabish/cloudnative-ai-server/models"
+	"os"
 	"os/exec"
+	"path"
 	"regexp"
+	"strings"
 )
 
 type taskParam struct {
@@ -32,41 +35,56 @@ func (s *handler) Process(task *models.Task) {
 	var err error
 	defer func() {
 		if err != nil {
-			s.L.Errorf("Process sad talker task failed:%s %s", task.Uid, err.Error())
+			s.L.Errorf("Process sad talker task failed: %s %s", task.Uid, err.Error())
 			s.UpdateTaskStatus(task.Uid, models.TaskStatusFailed)
 		}
 	}()
 	p := s.getParam(task.Uid)
-	s.L.Infof("Processing sad talker task:%s %s", task.Uid, p)
+	s.L.Infof("Processing sad talker task: %s %s", task.Uid, p)
 	err = s.workerFunc(task, p)
 }
 
 func (s *handler) invokeSadTalker(task *models.Task, p *taskParam) error {
-	cmd := exec.Command(s.pythonPath, "inference.py", "--driven_audio", p.audio, "--source_image", p.photo)
-	if err := cmd.Run(); err != nil {
+	curDir, err := os.Getwd()
+	if err != nil {
 		return err
 	}
-	stdout, err := cmd.Output()
-	if err != nil {
-		s.UpdateTaskStatus(task.Uid, models.TaskStatusResultMissing)
+	args := []string{
+		"inference.py",
+		"--driven_audio",
+		path.Join(curDir, p.audio),
+		"--source_image",
+		path.Join(curDir, p.photo),
+		"--result_dir",
+		path.Join(curDir, "results"),
+	}
+	s.L.Debugf("sadtalker command: %s %v %v", s.pythonPath, args, s.extraArgs)
+	cmd := exec.Command(s.pythonPath, append(args, s.extraArgs...)...)
+	cmd.Dir = s.projectPath
+
+	var output []byte
+	if output, err = cmd.Output(); err != nil {
+		return err
 	}
 
-	if result := ParseResult(string(stdout)); result != "" {
+	s.L.Debugf("sadtalker stdout: %s", output)
+	if result := ParseResult(string(output)); result != "" {
 		s.SaveTaskResult(task.Uid, result)
+		s.UpdateTaskStatus(task.Uid, models.TaskStatusSuccess)
 	} else {
+		s.L.Warnf("sadtalker result not found: %s", task.Uid)
 		s.UpdateTaskStatus(task.Uid, models.TaskStatusResultMissing)
 	}
 	return nil
 }
 
 func ParseResult(log string) string {
-	re := regexp.MustCompile(`\./results/\d{4}_\d{2}_\d{2}_\d{2}\.\d{2}\.\d{2}\.mp4\n`)
+	re := regexp.MustCompile(`/results/\d{4}_\d{2}_\d{2}_\d{2}\.\d{2}\.\d{2}\.mp4\n`)
 	match := re.FindString(log)
 	if match == "" {
 		return match
 	}
-	// 去除匹配字符串两端的换行符和"./results/"
 	result := match[:len(match)-1] // 移除尾部的换行符
-	result = result[10:]           // 移除前面的"./results/"
-	return result
+	splits := strings.Split(result, "/")
+	return splits[len(splits)-1]
 }

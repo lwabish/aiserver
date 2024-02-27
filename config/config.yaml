@@ -1,5 +1,6 @@
 logLevel: "debug"
 db:
+  # sqlite/mysql
   driver: "sqlite"
   mysql: "root:root@tcp(localhost:3307)/ai-server?charset=utf8mb4&parseTime=True&loc=Local"
 # 真实ai服务调用方式
@@ -8,10 +9,11 @@ db:
 mode: "bare-metal"
 auth:
   tokenExpire: false
-  tokenValidPeriod: 60
 bareMetal:
   sadTalker:
-    pythonPath: python
+    projectPath: /root/SadTalker
+    pythonPath: /root/miniconda3/envs/sadtalker/bin/python
+    extraArgs: []
 cloudNative:
   sadTalker:
     jobNamespace: default

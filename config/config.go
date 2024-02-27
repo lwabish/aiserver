@@ -13,12 +13,13 @@ type Config struct {
 	}
 	Mode string `yaml:"mode"`
 	Auth struct {
-		TokenExpire      bool  `yaml:"tokenExpire"`
-		TokenValidPeriod int64 `yaml:"tokenValidPeriod"`
+		TokenExpire bool `yaml:"tokenExpire"`
 	}
 	BareMetal struct {
 		SadTalker struct {
-			PythonPath string `yaml:"pythonPath"`
+			PythonPath  string   `yaml:"pythonPath"`
+			ProjectPath string   `yaml:"projectPath"`
+			ExtraArgs   []string `yaml:"extraArgs"`
 		}
 	}
 	CloudNative struct {

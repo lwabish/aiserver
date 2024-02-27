@@ -14,11 +14,18 @@ var (
 
 type handler struct {
 	*handlers.BaseHandler
-	workerParam  map[string]*taskParam
-	workerFunc   func(task *models.Task, p *taskParam) error
-	pythonPath   string
-	JobNamespace string
+	workerParam map[string]*taskParam
+	workerFunc  func(task *models.Task, p *taskParam) error
 	sync.Mutex
+
+	extraArgs []string
+
+	// bare metal
+	projectPath string
+	pythonPath  string
+
+	// cloud native
+	JobNamespace string
 }
 
 func newHandler() *handler {
@@ -35,7 +42,10 @@ func newHandler() *handler {
 func (s *handler) Setup(cfg *config.Config) {
 	if s.C == nil {
 		s.workerFunc = s.invokeSadTalker
-		s.pythonPath = cfg.BareMetal.SadTalker.PythonPath
+		c := cfg.BareMetal.SadTalker
+		s.pythonPath = c.PythonPath
+		s.projectPath = c.ProjectPath
+		s.extraArgs = c.ExtraArgs
 	} else {
 		s.workerFunc = s.createJob
 	}
