@@ -44,7 +44,7 @@ func (s *handler) Process(task *models.Task) {
 	err = s.workerFunc(task, p)
 }
 
-func (s *handler) invokeSadTalker(task *models.Task, p *taskParam) error {
+func (s *handler) invoke(task *models.Task, p *taskParam) error {
 	curDir, err := os.Getwd()
 	if err != nil {
 		return err

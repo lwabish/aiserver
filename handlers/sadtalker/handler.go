@@ -4,21 +4,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lwabish/cloudnative-ai-server/models"
+	"github.com/lwabish/cloudnative-ai-server/utils"
 	"net/http"
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 var (
 	allowedUploadExtensions = []string{
 		".png", ".jpg", ".jpeg", ".gif", ".mp3", ".wav", ".m4a", ".mp4",
 	}
-)
-
-const (
-	uploadDir = "uploads"
-	resultDir = "results"
 )
 
 // UploadFile 上传文件并创建任务
@@ -30,13 +25,13 @@ func (s *handler) UploadFile(c *gin.Context) {
 		return
 	}
 
-	if !isAllowedExtension(photo.Filename) || !isAllowedExtension(audio.Filename) {
+	if !utils.IsAllowedExtension(photo.Filename, allowedUploadExtensions) || !utils.IsAllowedExtension(audio.Filename, allowedUploadExtensions) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file extension not allowed"})
 		return
 	}
 
-	photoPath := filepath.Join(uploadDir, photo.Filename)
-	audioPath := filepath.Join(uploadDir, audio.Filename)
+	photoPath := filepath.Join(utils.UploadDir, photo.Filename)
+	audioPath := filepath.Join(utils.UploadDir, audio.Filename)
 	if pErr, aErr = c.SaveUploadedFile(photo, photoPath), c.SaveUploadedFile(audio, audioPath); pErr != nil || aErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
 		return
@@ -79,14 +74,5 @@ func (s *handler) GetTaskStatus(c *gin.Context) {
 // DownloadResult 下载任务结果
 func (s *handler) DownloadResult(c *gin.Context) {
 	fileName := c.PostForm("filename")
-	c.FileAttachment(path.Join(resultDir, fileName), fileName)
-}
-
-func isAllowedExtension(fileName string) bool {
-	for _, extension := range allowedUploadExtensions {
-		if strings.ToLower(filepath.Ext(fileName)) == extension {
-			return true
-		}
-	}
-	return false
+	c.FileAttachment(path.Join(utils.ResultDir, fileName), fileName)
 }

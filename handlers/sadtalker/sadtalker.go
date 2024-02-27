@@ -41,7 +41,7 @@ func newHandler() *handler {
 
 func (s *handler) Setup(cfg *config.Config) {
 	if s.C == nil {
-		s.workerFunc = s.invokeSadTalker
+		s.workerFunc = s.invoke
 		c := cfg.BareMetal.SadTalker
 		s.pythonPath = c.PythonPath
 		s.projectPath = c.ProjectPath

@@ -6,6 +6,7 @@ import (
 	"github.com/lwabish/cloudnative-ai-server/config"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/handlers"
+	"github.com/lwabish/cloudnative-ai-server/handlers/roop"
 	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/routes"
@@ -61,6 +62,7 @@ func main() {
 	})
 	handlers.MidHdl.Setup(&handlers.MiddlewareHandlerCfg{L: logger, TicketExpire: cfg.Auth.TokenExpire})
 	sadtalker.StHdl.Setup(&cfg)
+	roop.Handler.Setup(&cfg)
 
 	go StartWorker(taskQueue)
 
@@ -74,6 +76,7 @@ func main() {
 
 	router := gin.Default()
 	routes.RegisterRoutes(router)
+	// fixme: no panic
 	if err = router.Run(":8080"); err != nil {
 		panic(err)
 	}

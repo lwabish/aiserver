@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/lwabish/cloudnative-ai-server/handlers/roop"
 	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
 	"github.com/lwabish/cloudnative-ai-server/utils"
@@ -30,6 +31,8 @@ func dispatchTask(task *models.Task) {
 	switch task.Type {
 	case sadtalker.TaskType:
 		processTask(task, sadtalker.StHdl)
+	case roop.TaskType:
+		processTask(task, roop.Handler)
 	default:
 		panic(fmt.Errorf("unknown task type: %s", task.Type))
 	}
