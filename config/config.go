@@ -26,6 +26,11 @@ type Config struct {
 			ProjectPath string   `yaml:"projectPath"`
 			ExtraArgs   []string `yaml:"extraArgs"`
 		}
+		OpenVoice struct {
+			PythonPath  string   `yaml:"pythonPath"`
+			ProjectPath string   `yaml:"projectPath"`
+			ExtraArgs   []string `yaml:"extraArgs"`
+		}
 	}
 	CloudNative struct {
 		SadTalker struct {

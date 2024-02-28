@@ -18,6 +18,10 @@ bareMetal:
     projectPath: /root/roop
     pythonPath: /root/miniconda3/envs/roop/bin/python
     extraArgs: []
+  openvoice:
+    projectPath: /root/OpenVoice
+    pythonPath: /root/miniconda3/envs/openvoice/bin/python
+    extraArgs: []
 cloudNative:
   sadTalker:
     jobNamespace: default

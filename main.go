@@ -6,6 +6,7 @@ import (
 	"github.com/lwabish/cloudnative-ai-server/config"
 	"github.com/lwabish/cloudnative-ai-server/controllers"
 	"github.com/lwabish/cloudnative-ai-server/handlers"
+	"github.com/lwabish/cloudnative-ai-server/handlers/openvoice"
 	"github.com/lwabish/cloudnative-ai-server/handlers/roop"
 	"github.com/lwabish/cloudnative-ai-server/handlers/sadtalker"
 	"github.com/lwabish/cloudnative-ai-server/models"
@@ -63,6 +64,7 @@ func main() {
 	handlers.MidHdl.Setup(&handlers.MiddlewareHandlerCfg{L: logger, TicketExpire: cfg.Auth.TokenExpire})
 	sadtalker.StHdl.Setup(&cfg)
 	roop.Handler.Setup(&cfg)
+	openvoice.Handler.Setup(&cfg)
 
 	go StartWorker(taskQueue)
 
