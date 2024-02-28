@@ -1,4 +1,4 @@
-package roop
+package openvoice
 
 import (
 	"github.com/lwabish/cloudnative-ai-server/handlers"
