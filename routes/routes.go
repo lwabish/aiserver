@@ -12,6 +12,7 @@ func RegisterRoutes(router *gin.Engine) {
 			for _, route := range routes {
 				router.Handle(route.Method, route.Path, append(route.Middleware, route.Handler)...)
 			}
+			continue
 		}
 		g := router.Group(string(group))
 		if m, ok := utils.GroupMiddlewares[group]; ok {
