@@ -11,7 +11,7 @@ import (
 
 var (
 	allowedUploadExtensions = []string{
-		"mp3", "wav", "flac", "aac", "m4a", "ogg", "opus", "wma",
+		".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg", ".opus", ".wma",
 	}
 )
 
