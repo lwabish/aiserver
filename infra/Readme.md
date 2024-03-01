@@ -5,7 +5,7 @@
 1. start from 1 node
 2. setup control-plane with complete default config from kubeKey
 3. add 2 more nodes(control-plane,worker,etcd) in yaml
-4. `kk add nodes -f ./ai-server/infra/dev.yaml`
+4. `kk add nodes -f ./ai-server/infra/dev-cluster.yaml`
 5. attention: kubeKey forbids etcd nodes to be deleted
 
 ## image registry
@@ -24,7 +24,7 @@
 
 nvidia gpu-operator chart
 
-```commandline
+```bash
 helm install --wait --generate-name \
      -n nvidia-gpu-operator --create-namespace \
      nvidia/gpu-operator
@@ -33,7 +33,7 @@ helm install --wait --generate-name \
 ## storage
 
 1. dev: localPath provisioner
-   ```commandline
+   ```bash
    kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml
    ```
 2. prod: openebs?
@@ -41,6 +41,6 @@ helm install --wait --generate-name \
 ## middleware
 
 1. mariadb
-  ```commandline
+  ```bash
   helm upgrade -i -n mariadb --create-namespace mariadb oci://registry-1.docker.io/bitnamicharts/mariadb
   ```
